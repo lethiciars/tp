@@ -96,4 +96,23 @@ public interface Model {
      * Returns summary of AddressBook.
      */
     Summary getSummary();
+
+    /**
+     * Updates AddressBook history.
+     */
+    void commit();
+
+    /**
+     * Restores the previous AddressBook version.
+     */
+    void undo();
+
+    /**
+     * Restores the AddressBook before the undo command.
+     */
+    void redo();
+
+    boolean isUndoable();
+    boolean isRedoable();
+
 }

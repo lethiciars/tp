@@ -24,6 +24,10 @@ public class ModelManager implements Model {
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final Summary summary;
+    private final AddressBook prev;
+    private final AddressBook next;
+    private boolean isUndoable = false;
+    private boolean isRedoable = false;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -38,6 +42,8 @@ public class ModelManager implements Model {
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
         summary = new Summary(addressBook);
+        this.prev = new AddressBook();
+        this.next = new AddressBook();
     }
 
     public ModelManager() {
@@ -84,6 +90,7 @@ public class ModelManager implements Model {
 
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
+        commit();
         this.addressBook.resetData(addressBook);
     }
 
@@ -100,11 +107,13 @@ public class ModelManager implements Model {
 
     @Override
     public void deletePerson(Person target) {
+        this.commit();
         addressBook.removePerson(target);
     }
 
     @Override
     public void addPerson(Person person) {
+        commit();
         addressBook.addPerson(person);
         updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
@@ -113,12 +122,47 @@ public class ModelManager implements Model {
     public void setPerson(Person target, Person editedPerson) {
         requireAllNonNull(target, editedPerson);
 
+        commit();
         addressBook.setPerson(target, editedPerson);
     }
 
     @Override
     public void exportPerson(Person person) {
         addressBook.exportPerson(person);
+    }
+
+    @Override
+    public void commit() {
+        prev.resetData(addressBook);
+        isUndoable = true;
+    }
+
+    @Override
+    public boolean isUndoable() {
+        return isUndoable;
+    }
+
+    @Override
+    public boolean isRedoable() {
+        return isRedoable;
+    }
+
+    @Override
+    public void undo() {
+        next.resetData(addressBook);
+        addressBook.resetData(prev);
+        this.prev.resetData(new AddressBook());
+        isUndoable = false;
+        isRedoable = true;
+    }
+
+    @Override
+    public void redo() {
+        prev.resetData(addressBook);
+        addressBook.resetData(next);
+        this.next.resetData(new AddressBook());
+        isRedoable = false;
+        isUndoable = true;
     }
 
     //=========== Filtered Person List Accessors =============================================================
