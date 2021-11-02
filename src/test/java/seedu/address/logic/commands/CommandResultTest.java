@@ -5,17 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalPersons.getTypicalPersons;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.person.Person;
 import seedu.address.model.summary.Summary;
+
+import java.util.concurrent.ConcurrentMap;
 
 public class CommandResultTest {
     private Summary summary = new Summary(getTypicalAddressBook());
+    private Person person = getTypicalPersons().get(0);
+
     @Test
     public void equals() {
         CommandResult commandResult = new CommandResult("feedback");
         CommandResult commandResultSummary = new CommandResult("feedback", summary);
+        CommandResult commandResultPerson = new CommandResult("feedback", person);
 
         // same values -> returns true
         assertTrue(commandResult.equals(new CommandResult("feedback")));
@@ -55,12 +62,19 @@ public class CommandResultTest {
 
         // same object -> returns true
         assertTrue(commandResultSummary.equals(new CommandResult("feedback", summary)));
+
+        //same object -> returns true
+        assertTrue(commandResultPerson.equals(new CommandResult("feedback", person)));
+
+        //different Person -> returns false
+        assertFalse(commandResultPerson.equals(new CommandResult("feedback")));
     }
 
     @Test
     public void hashcode() {
         CommandResult commandResult = new CommandResult("feedback");
         CommandResult commandResultSummary = new CommandResult("feedback", summary);
+        CommandResult commandResultPerson = new CommandResult("feedback", person);
 
         // same values -> returns same hashcode
         assertEquals(commandResult.hashCode(), new CommandResult("feedback").hashCode());
@@ -94,5 +108,8 @@ public class CommandResultTest {
         // different summary value with Command Result-> returns different hashcode
         assertNotEquals(commandResultSummary.hashCode(), new CommandResult("feedback",
                 true, false, false).hashCode());
+
+        // same values -> returns same hashcode (person)
+        assertEquals(commandResultPerson.hashCode(), new CommandResult("feedback", person).hashCode());
     }
 }
